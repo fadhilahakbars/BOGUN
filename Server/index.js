@@ -303,25 +303,22 @@ app.post('/login', function (request, response) {
     console.log(pass);
     if (username && pass) {
         client.query('SELECT COUNT(*), k.username FROM keanggotaan AS k WHERE k.username = $1 AND k.pass = $2 group by k.username;', [username, pass], function (error, results, fields) {
-            if (results.rows[0].count == 0) {
+            if (results.rows[0] == null) {
                 response.jsonp({ success: false });
                 console.log("Login Gagal");
             }
-
             else if (results.rows[0].username == 'admin') {
                 response.jsonp({ admin: true });
                 console.log("ini admin");
             }
             else {
-                // response.statusCode = 200;
-                // response.send(null);
                 response.jsonp({ success: true });
                 console.log("Login berhasil");
             }
             response.end();
         });
     } else {
-        console.log("Ga masuk");
+        console.log("Gagal");
         response.send('Please enter Username and Password!');
         response.end();
     }
@@ -455,100 +452,6 @@ app.get("/listsandi/:id", async (req, res) => {
         console.error(err.message);
     }
 });
-
-
-// app.post('/login', async (request, response)=> {
-//     var username = request.body.username;
-//     var pass = request.body.pass;
-//     console.log(username);
-//     console.log(pass);
-//     if (username && pass) {
-//         client.query('SELECT COUNT(*), k.username FROM keanggotaan AS k WHERE k.username = $1 AND k.pass = $2 group by k.username;', [username, pass], function (error, results, fields) {
-//             if (results.rows[0].count == 0) {
-//                 // response.jsonp({ success: false });
-//                 request.session.loggedin = false;
-//                 console.log("Login Gagal");
-//             }
-
-//             else if (results.rows[0].username == 'admin') {
-//                 // response.jsonp({ admin: true });
-//                 console.log("ini admin");
-//                 request.session.loggedin = true;
-//                 request.session.admin = true;
-//                 request.session.username = username;
-//                 response.redirect('/dahlah');
-//             }
-//             else {
-//                 // response.statusCode = 200;
-//                 // response.send(null);
-//                 // response.jsonp({ success: true });
-//                 console.log("Login berhasil");
-//                 request.session.loggedin = true;
-//                 request.session.username = username;
-//                 response.redirect('/dahlah');
-//             }
-//             // console.log(request.session.loggedin);
-//             // console.log(request.session.username);
-//             response.end();
-//         });
-//     } else {
-//         console.log("Ga masuk");
-//         response.send('Please enter Username and Password!');
-//         response.end();
-//     }
-
-// });
-
-// app.get('/', function(request, response) {
-// 	response.sendFile(path.join(__dirname + '/login1.html'));
-// });
-
-// app.post('/auth', function(request, response) {
-// 	var username = request.body.username;
-// 	var password = request.body.password;
-// 	if (username && password) {
-// 		connection.query('SELECT * FROM keanggotaan WHERE username = $1 AND pass = $2', [username, pass], function(error, results, fields) {
-// 			if (results.length > 0) {
-// 				request.session.loggedin = true;
-// 				request.session.username = username;
-// 				response.redirect('/home');
-// 			} else {
-// 				response.send('Incorrect Username and/or Password!');
-// 			}			
-// 			response.end();
-// 		});
-// 	} else {
-// 		response.send('Please enter Username and Password!');
-// 		response.end();
-// 	}
-// });
-
-// app.get('/wedidit', function(request, response) {
-// 	if (request.session.loggedin) {
-// 		response.send('Welcome back, ' + request.session.username + '!');
-// 	} else {
-// 		response.send('Please login to view this page!');
-// 	}
-// 	response.end();
-// });
-
-// app.get('/dahlah', async (request, response) => {
-// 	if (request.session.admin) {
-//         console.log(request.session.loggedin);
-//         console.log(request.session.username);
-//         response.send('Welcome back Admin!');
-//     }
-//     else if (request.session.loggedin) {
-//         console.log(request.session.loggedin);
-//         console.log(request.session.username);
-// 		response.send('Welcome back, ' + request.session.username + '!');
-// 	} else {
-//         console.log(request.session.loggedin);
-//         console.log(request.session.username);
-// 		response.send('Please login to view this page!');
-// 	}
-// 	response.end();
-// });
 
 //server listening
 app.listen(port, () => {

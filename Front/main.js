@@ -304,7 +304,7 @@ $('#select').on('click', function (event) {
         $('#tampil').append(
             "<table>" +
             `  <tr>
-            <th>no</th>
+            <th>id_pembelian</th>
             <th>id_gunung</th>
             <th>nama_gunung</th>
             <th>wilayah</th>

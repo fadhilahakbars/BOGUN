@@ -15,7 +15,7 @@ drop function check_kuota();
 drop function check_uang();
 drop function refund();
 
--- Create Table
+-- Create Database
 create database bogun;
 
 -- Create Type
