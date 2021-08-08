@@ -1,4 +1,4 @@
--- BUAT NGEDROP AJA INI JANGAN DIPAKE KALAU GA PERLU
+-- DROP DATABASE
 drop trigger trigger_ubah_kuota on pembelian;
 drop trigger trigger_check_kuota on pembelian;
 drop trigger trigger_transaksi on pembelian;
@@ -15,22 +15,25 @@ drop function check_kuota();
 drop function check_uang();
 drop function refund();
 
+-- Create Table
+create database bogun;
+
 -- Create Type
 create type hari as enum ('Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu');
 
--- PEMBUATAN TABLE
+-- Create Table
 create table jadwal (id_jadwal serial not null unique, tanggal varchar(100) primary key , hari hari);
 create table gunung (id_gunung serial primary key, nama_gunung varchar(100), wilayah varchar(100));
 create table list (no serial primary key , id_gunung int not null , jadwal varchar(100) not null, harga_tiket bigint, kuota int, constraint fk_jadwal foreign key(jadwal) references jadwal(tanggal) on update cascade, constraint fk_gunung foreign key(id_gunung) references gunung(id_gunung) on update cascade);
 create table keanggotaan (id_user serial not null unique, username varchar(100) primary key, pass varchar(100), uang bigint, pengeluaran bigint, total_tiket int);
 create table pembelian (no serial primary key, id_pembelian int not null, username varchar(100) not null, tiket int not null, constraint fk_user foreign key(username) references keanggotaan(username) on update cascade, constraint fk_pembelian foreign key(id_pembelian) references list(no) on update cascade);
 
--- Data Awalan
+-- Insert Data
 insert into jadwal (tanggal, hari) values
 ('2021-07-27', 'Selasa'),
 ('2021-07-28', 'Rabu'),
 ('2021-07-29', 'Kamis'),
-('2021-07-30', 'Jumat');
+('2021-07-30', 'Jumat'),
 
 insert into gunung (nama_gunung, wilayah) values
 ('Gunung Ciremai', 'Jawa Barat'),
@@ -49,6 +52,7 @@ insert into keanggotaan (username, pass, uang, pengeluaran, total_tiket) values
 ('user1', 'user1', 50000, 0, 0),
 ('user2', 'user2', 40000, 0, 0);
 
+-- Function dan trigger check kuota
 CREATE OR REPLACE FUNCTION check_kuota() RETURNS TRIGGER AS
     $$
     BEGIN
@@ -70,6 +74,7 @@ create trigger trigger_check_kuota
     before insert on pembelian
     for each row execute procedure check_kuota();
 
+-- Function dan trigger check uang
 CREATE OR REPLACE FUNCTION check_uang() RETURNS TRIGGER AS
     $$
     BEGIN
@@ -93,6 +98,7 @@ create trigger trigger_check_uang
     before insert on pembelian
     for each row execute procedure check_uang();
 
+-- Function dan trigger ubah kuota
 CREATE OR REPLACE FUNCTION ubah_kuota()
     RETURNS TRIGGER AS
 $$
@@ -103,13 +109,11 @@ END
 $$
     LANGUAGE plpgsql VOLATILE;
 
-
---PEMBUATAN TRIGGER FUNCTION TRANSAKSI
 CREATE TRIGGER trigger_ubah_kuota
 AFTER INSERT ON pembelian
 FOR EACH ROW EXECUTE PROCEDURE ubah_kuota();
 
---PEMBUATAN FUNCTION UNTUK PENGURANGAN PEMBELIAN MENU TERHADAP UANG YANG DIMILIKI USER DAN MENAMBAHKAN TOTAL HARGA YANG DIBELI USER
+-- Function dan trigger transaksi
 CREATE OR REPLACE FUNCTION transaksi()
     RETURNS TRIGGER AS
 $$
@@ -127,11 +131,11 @@ END
 $$
     LANGUAGE plpgsql VOLATILE;
 
---PEMBUATAN TRIGGER FUNCTION transaksi_pembeli
 CREATE TRIGGER trigger_transaksi
 AFTER INSERT ON pembelian
 FOR EACH ROW EXECUTE PROCEDURE transaksi();
 
+-- Function dan trigger refund
 CREATE OR REPLACE FUNCTION refund()
     RETURNS TRIGGER AS
 $$
@@ -151,17 +155,15 @@ END
 $$
     LANGUAGE plpgsql VOLATILE;
 
---PEMBUATAN TRIGGER FUNCTION transaksi_pembeli
 CREATE TRIGGER trigger_refund
 AFTER DELETE ON pembelian
 FOR EACH ROW EXECUTE PROCEDURE refund();
 
+-- Beberapa data yang bisa dicoba
 select no, g.id_gunung, nama_gunung, wilayah, tanggal, kuota, harga_tiket from (list inner join jadwal on list.jadwal = jadwal.tanggal) inner join gunung g on list.id_gunung = g.id_gunung order by id_gunung ASC;
 
 insert into pembelian (username, id_pembelian, tiket) values ('user1', 1, 2);
 insert into pembelian (username, id_pembelian, tiket) values ('halo', 4, 2);
 
 delete from pembelian where id_pembelian = 1 AND username = 'user1';
-
-
 delete from pembelian where jadwal = '2021-07-28' AND id_gunung = 2 AND username = 'user1';
